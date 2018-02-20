@@ -10,6 +10,7 @@ in the source distribution for its full text.
 #include "Action.h"
 #include "Affinity.h"
 #include "AffinityPanel.h"
+#include "ArgsScreen.h"
 #include "CategoriesPanel.h"
 #include "CRT.h"
 #include "EnvScreen.h"
@@ -414,7 +415,7 @@ static const struct { const char* key; const char* info; } helpRight[] = {
    { .key = "      i: ", .info = "set IO priority" },
    { .key = "      l: ", .info = "list open files with lsof" },
    { .key = "      s: ", .info = "trace syscalls with strace" },
-   { .key = "         ", .info = "" },
+   { .key = "      v: ", .info = "show process command line (argV)" },
    { .key = " F2 C S: ", .info = "setup" },
    { .key = "   F1 h: ", .info = "show this help screen" },
    { .key = "  F10 q: ", .info = "quit" },
@@ -521,6 +522,16 @@ static Htop_Reaction actionShowEnvScreen(State* st) {
    return HTOP_REFRESH | HTOP_REDRAW_BAR;
 }
 
+static Htop_Reaction actionShowArgsScreen(State* st) {
+   Process* p = (Process*) Panel_getSelected(st->panel);
+   if (!p) return HTOP_OK;
+   ArgsScreen* es = ArgsScreen_new(p);
+   InfoScreen_run((InfoScreen*)es);
+   ArgsScreen_delete((Object*)es);
+   clear();
+   CRT_enableDelay();
+   return HTOP_REFRESH | HTOP_REDRAW_BAR;
+}
 
 void Action_setBindings(Htop_Action* keys) {
    keys[KEY_RESIZE] = actionResize;
@@ -572,5 +583,6 @@ void Action_setBindings(Htop_Action* keys) {
    keys['U'] = actionUntagAll;
    keys['c'] = actionTagAllChildren;
    keys['e'] = actionShowEnvScreen;
+   keys['v'] = actionShowArgsScreen;
 }
 

@@ -213,27 +213,38 @@ void Platform_setSwapValues(Meter* this) {
    this->values[0] = pl->usedSwap;
 }
 
+char* readProcFile(const char* procname) {
+   FILE* fd = fopen(procname, "r");
+   char *ret = NULL;
+   if (fd) {
+      size_t capacity = 4096, size = 0, bytes;
+      ret = xMalloc(capacity);
+      while (ret && (bytes = fread(ret+size, 1, capacity-size, fd)) > 0) {
+         size += bytes;
+         capacity *= 2;
+         ret = xRealloc(ret, capacity);
+      }
+      fclose(fd);
+      if (size < 2 || ret[size-1] || ret[size-2]) {
+         if (size + 2 < capacity) {
+            ret = xRealloc(ret, capacity+2);
+         }
+         ret[size] = 0;
+         ret[size+1] = 0;
+      }
+   }
+   return ret;
+}
+
 char* Platform_getProcessEnv(pid_t pid) {
    char procname[32+1];
    xSnprintf(procname, 32, "/proc/%d/environ", pid);
    FILE* fd = fopen(procname, "r");
-   char *env = NULL;
-   if (fd) {
-      size_t capacity = 4096, size = 0, bytes;
-      env = xMalloc(capacity);
-      while (env && (bytes = fread(env+size, 1, capacity-size, fd)) > 0) {
-         size += bytes;
-         capacity *= 2;
-         env = xRealloc(env, capacity);
-      }
-      fclose(fd);
-      if (size < 2 || env[size-1] || env[size-2]) {
-         if (size + 2 < capacity) {
-            env = xRealloc(env, capacity+2);
-         }
-         env[size] = 0;
-         env[size+1] = 0;
-      }
-   }
-   return env;
+   return readProcFile(procname);
+}
+
+char* Platform_getProcessArgs(pid_t pid) {
+   char procname[32+1];
+   xSnprintf(procname, 32, "/proc/%d/cmdline", pid);
+   return readProcFile(procname);
 }

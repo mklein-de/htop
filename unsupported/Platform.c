@@ -130,3 +130,8 @@ char* Platform_getProcessEnv(pid_t pid) {
    (void) pid;
    return NULL;
 }
+
+char* Platform_getProcessArgs(pid_t pid) {
+   (void)pid;   // prevent unused warning
+   return NULL;
+}
