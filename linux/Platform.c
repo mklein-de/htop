@@ -213,7 +213,7 @@ void Platform_setSwapValues(Meter* this) {
    this->values[0] = pl->usedSwap;
 }
 
-char* readProcFile(const char* procname) {
+static char* readProcFile(const char* procname) {
    FILE* fd = fopen(procname, "r");
    char *ret = NULL;
    if (fd) {

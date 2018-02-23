@@ -293,6 +293,49 @@ char* Platform_getProcessEnv(pid_t pid) {
 }
 
 char* Platform_getProcessArgs(pid_t pid) {
-   (void)pid;   // prevent unused warning
-   return NULL;
+   char* args = NULL;
+
+   int argmax;
+   size_t bufsz = sizeof(argmax);
+
+   int mib[3];
+   mib[0] = CTL_KERN;
+   mib[1] = KERN_ARGMAX;
+   if (sysctl(mib, 2, &argmax, &bufsz, 0, 0) == 0) {
+      char* buf = xMalloc(argmax);
+      if (buf) {
+         mib[0] = CTL_KERN;
+         mib[1] = KERN_PROCARGS2;
+         mib[2] = pid;
+         size_t bufsz = argmax;
+         if (sysctl(mib, 3, buf, &bufsz, 0, 0) == 0) {
+            if (bufsz > sizeof(int)) {
+               // skip argc
+               char *p = buf;
+               int argc = *(int*)p;
+               p += sizeof(int);
+
+               // skip exe
+               p = strchr(p, 0)+1;
+
+               // skip padding
+               while(!*p && p < buf + bufsz)
+                  ++p;
+
+               char *endp = p;
+               for (; argc--; endp = strrchr(endp, 0)+1)
+                  ;
+
+               size_t size = endp - p;
+               args = xMalloc(size+2);
+               memcpy(args, p, size);
+               args[size] = 0;
+               args[size+1] = 0;
+            }
+         }
+         free(buf);
+      }
+   }
+
+   return args;
 }

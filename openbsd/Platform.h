@@ -70,4 +70,6 @@ void Platform_setTasksValues(Meter* this);
 
 char* Platform_getProcessEnv(pid_t pid);
 
+char* Platform_getProcessArgs(pid_t pid);
+
 #endif

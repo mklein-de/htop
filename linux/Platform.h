@@ -43,8 +43,6 @@ void Platform_setMemoryValues(Meter* this);
 
 void Platform_setSwapValues(Meter* this);
 
-char* readProcFile(const char* procname);
-
 char* Platform_getProcessEnv(pid_t pid);
 
 char* Platform_getProcessArgs(pid_t pid);
